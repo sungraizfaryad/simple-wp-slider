@@ -14,7 +14,7 @@
  * Plugin Name:       Simple WP Slider
  * Plugin URI:        https://wordpress.org/plugins/simple-wp-slider
  * Description:       This is a purpose oriented plugin which show slider using shortcode.
- * Version:           1.0.1
+ * Version:           1.0.0
  * Author:            Sungraiz Faryad
  * Author URI:        www.sungraizfaryad.com
  * License:           GPL-2.0+
@@ -33,7 +33,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'SIMPLE_WP_SLIDER_VERSION', '1.0.1' );
+define( 'SIMPLE_WP_SLIDER_VERSION', '1.0.0' );
 
 /**
  * The code that runs during plugin activation.

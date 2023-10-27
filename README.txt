@@ -3,9 +3,9 @@ Contributors: sungraizfaryad
 Donate link: www.sungraizfaryad.com
 Tags: slider, sorting, jquery ui, setting api
 Requires at least: 5.9
-Tested up to: 6.4
-Stable tag: 1.0.1
-Requires PHP: 7.4
+Tested up to: 5.9
+Stable tag: 1.0.0
+Requires PHP: 7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,9 +38,6 @@ Yes you can. Please use the GitHub link for this.
 - [GitHub Repository](https://github.com/sungraizfaryad/simple-wp-slider)
 
 == Changelog ==
-
-= 1.0.1 =
-* Tested up to 6.4
 
 = 1.0 =
 * Initial Version
