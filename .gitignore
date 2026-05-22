@@ -1,1 +1,26 @@
-.idea
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Composer
+vendor/
+
+# Build artifacts (we DO commit assets/dist — comment in if that changes)
+# assets/dist/
+
+# Logs
+*.log
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Local dev
+.wp-env/
+.phpunit.result.cache
