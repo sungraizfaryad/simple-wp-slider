@@ -104,4 +104,50 @@ class Test_SWPS_REST extends WP_UnitTestCase {
 		$this->assertSame( 'image', $data['slides'][0]['type'] );
 		$this->assertSame( 'slide', $data['settings']['effect'] );
 	}
+
+	public function test_reorder_changes_slide_order() {
+		$id = $this->make_slider();
+		wp_set_current_user( $this->admin_id );
+
+		$slides = array(
+			array( 'id' => '11111111-1111-1111-1111-111111111111', 'type' => 'image' ),
+			array( 'id' => '22222222-2222-2222-2222-222222222222', 'type' => 'image' ),
+			array( 'id' => '33333333-3333-3333-3333-333333333333', 'type' => 'image' ),
+		);
+		update_post_meta( $id, '_swps_slides', SWPS_Sanitizer::slides( $slides ) );
+
+		$req = new WP_REST_Request( 'POST', '/swps/v1/sliders/' . $id . '/reorder' );
+		$req->set_header( 'content-type', 'application/json' );
+		$req->set_body( wp_json_encode( array( 'order' => array(
+			'33333333-3333-3333-3333-333333333333',
+			'11111111-1111-1111-1111-111111111111',
+			'22222222-2222-2222-2222-222222222222',
+		) ) ) );
+
+		$res = rest_get_server()->dispatch( $req );
+		$this->assertSame( 200, $res->get_status() );
+
+		$saved = get_post_meta( $id, '_swps_slides', true );
+		$this->assertSame( '33333333-3333-3333-3333-333333333333', $saved[0]['id'] );
+		$this->assertSame( '11111111-1111-1111-1111-111111111111', $saved[1]['id'] );
+		$this->assertSame( '22222222-2222-2222-2222-222222222222', $saved[2]['id'] );
+	}
+
+	public function test_duplicate_creates_new_post() {
+		$id = $this->make_slider( 'Original' );
+		wp_set_current_user( $this->admin_id );
+		update_post_meta( $id, '_swps_slides', SWPS_Sanitizer::slides( array(
+			array( 'type' => 'image', 'attachment_id' => 5 ),
+		) ) );
+
+		$req = new WP_REST_Request( 'POST', '/swps/v1/sliders/' . $id . '/duplicate' );
+		$res = rest_get_server()->dispatch( $req );
+		$this->assertSame( 200, $res->get_status() );
+
+		$new_id = $res->get_data()['id'];
+		$this->assertNotSame( $id, $new_id );
+		$this->assertSame( 'Original (copy)', get_the_title( $new_id ) );
+		$new_slides = get_post_meta( $new_id, '_swps_slides', true );
+		$this->assertSame( 5, $new_slides[0]['attachment_id'] );
+	}
 }

@@ -59,6 +59,43 @@ final class SWPS_REST {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/sliders/(?P<id>\d+)/reorder',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'reorder' ),
+					'permission_callback' => array( __CLASS__, 'can_edit_slider' ),
+					'args'                => array(
+						'id'    => array(
+							'validate_callback' => function ( $value ) {
+																											return is_numeric( $value ); },
+						),
+						'order' => array( 'required' => true ),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/sliders/(?P<id>\d+)/duplicate',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'duplicate' ),
+					'permission_callback' => array( __CLASS__, 'can_edit_slider' ),
+					'args'                => array(
+						'id' => array(
+							'validate_callback' => function ( $value ) {
+																											return is_numeric( $value ); },
+						),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -150,5 +187,91 @@ final class SWPS_REST {
 		update_post_meta( $id, SWPS_Meta::KEY_SCHEMA_VER, 2 );
 
 		return self::get_slider( $request );
+	}
+
+	/**
+	 * POST /swps/v1/sliders/{id}/reorder
+	 * Reorders slides by UUID. Leftover slides not in the order array are appended.
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return WP_REST_Response
+	 */
+	public static function reorder( WP_REST_Request $request ) {
+		$id     = (int) $request['id'];
+		$params = $request->get_json_params();
+		$order  = isset( $params['order'] ) && is_array( $params['order'] ) ? $params['order'] : array();
+
+		$slides = (array) get_post_meta( $id, SWPS_Meta::KEY_SLIDES, true );
+		$byid   = array();
+		foreach ( $slides as $s ) {
+			if ( isset( $s['id'] ) ) {
+				$byid[ (string) $s['id'] ] = $s;
+			}
+		}
+
+		$reordered = array();
+		foreach ( $order as $uuid ) {
+			$uuid = (string) $uuid;
+			if ( isset( $byid[ $uuid ] ) ) {
+				$reordered[] = $byid[ $uuid ];
+				unset( $byid[ $uuid ] );
+			}
+		}
+		foreach ( $byid as $leftover ) {
+			$reordered[] = $leftover;
+		}
+
+		update_post_meta( $id, SWPS_Meta::KEY_SLIDES, $reordered );
+
+		return rest_ensure_response(
+			array(
+				'id'    => $id,
+				'order' => array_column( $reordered, 'id' ),
+			)
+		);
+	}
+
+	/**
+	 * POST /swps/v1/sliders/{id}/duplicate
+	 * Clones a slider; regenerates slide UUIDs on the copy.
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function duplicate( WP_REST_Request $request ) {
+		$src_id = (int) $request['id'];
+		$title  = get_the_title( $src_id );
+
+		$new_id = wp_insert_post(
+			array(
+				'post_type'   => SWPS_CPT::POST_TYPE,
+				'post_status' => 'draft',
+				/* translators: %s: source slider title */
+				'post_title'  => sprintf( __( '%s (copy)', 'simple-wp-slider' ), $title ),
+			),
+			true
+		);
+
+		if ( is_wp_error( $new_id ) ) {
+			return $new_id;
+		}
+
+		$slides = (array) get_post_meta( $src_id, SWPS_Meta::KEY_SLIDES, true );
+		foreach ( $slides as &$s ) {
+			$s['id'] = wp_generate_uuid4();
+		}
+		unset( $s );
+
+		update_post_meta( $new_id, SWPS_Meta::KEY_SLIDES, $slides );
+		update_post_meta( $new_id, SWPS_Meta::KEY_SETTINGS, get_post_meta( $src_id, SWPS_Meta::KEY_SETTINGS, true ) );
+		update_post_meta( $new_id, SWPS_Meta::KEY_SCHEMA_VER, 2 );
+
+		return rest_ensure_response(
+			array(
+				'id'     => $new_id,
+				'title'  => get_the_title( $new_id ),
+				'status' => 'draft',
+			)
+		);
 	}
 }
