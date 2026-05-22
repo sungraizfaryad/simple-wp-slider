@@ -1,25 +1,7 @@
 import { createRoot } from '@wordpress/element';
-import { Spinner } from '@wordpress/components';
-import { SliderProvider, useSlider } from './SliderProvider';
+import { SliderProvider } from './SliderProvider';
+import { SlideManager } from './SlideManager';
 import './style.scss';
-
-function Placeholder() {
-	const { state } = useSlider();
-	if ( ! state.loaded ) {
-		return <Spinner />;
-	}
-	return (
-		<div>
-			<p>
-				Slider loaded: <strong>{ state.title || '(untitled)' }</strong>
-			</p>
-			<p>
-				{ state.slides.length } slides. SlideManager UI arrives in Task
-				22.
-			</p>
-		</div>
-	);
-}
 
 document.addEventListener( 'DOMContentLoaded', () => {
 	const mount = document.getElementById( 'swps-admin-root' );
@@ -33,7 +15,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
 	const root = createRoot( mount );
 	root.render(
 		<SliderProvider sliderId={ sliderId }>
-			<Placeholder />
+			<SlideManager />
 		</SliderProvider>
 	);
 } );
