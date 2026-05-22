@@ -114,6 +114,24 @@ final class SWPS_REST {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/notices/dismiss',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'dismiss_notice' ),
+					'permission_callback' => array( __CLASS__, 'can_edit_posts' ),
+					'args'                => array(
+						'notice' => array(
+							'required'          => true,
+							'sanitize_callback' => 'sanitize_key',
+						),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -300,6 +318,24 @@ final class SWPS_REST {
 				'status' => 'draft',
 			)
 		);
+	}
+
+	/**
+	 * POST /swps/v1/notices/dismiss
+	 * Records a notice as dismissed for the current user.
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return WP_REST_Response
+	 */
+	public static function dismiss_notice( WP_REST_Request $request ) {
+		$key  = (string) $request['notice'];
+		$user = get_current_user_id();
+		$list = (array) get_user_meta( $user, 'swps_notices', true );
+		if ( ! in_array( $key, $list, true ) ) {
+			$list[] = $key;
+			update_user_meta( $user, 'swps_notices', $list );
+		}
+		return rest_ensure_response( array( 'dismissed' => $list ) );
 	}
 
 	/**

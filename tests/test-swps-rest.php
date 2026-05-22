@@ -150,4 +150,17 @@ class Test_SWPS_REST extends WP_UnitTestCase {
 		$new_slides = get_post_meta( $new_id, '_swps_slides', true );
 		$this->assertSame( 5, $new_slides[0]['attachment_id'] );
 	}
+
+	public function test_notice_dismiss_writes_user_meta() {
+		wp_set_current_user( $this->admin_id );
+		$req = new WP_REST_Request( 'POST', '/swps/v1/notices/dismiss' );
+		$req->set_header( 'content-type', 'application/json' );
+		$req->set_body( wp_json_encode( array( 'notice' => 'migration_v2' ) ) );
+
+		$res = rest_get_server()->dispatch( $req );
+		$this->assertSame( 200, $res->get_status() );
+		$dismissed = get_user_meta( $this->admin_id, 'swps_notices', true );
+		$this->assertIsArray( $dismissed );
+		$this->assertContains( 'migration_v2', $dismissed );
+	}
 }
