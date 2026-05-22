@@ -102,21 +102,13 @@ final class SWPS_Admin {
 				'version'      => SWPS_VERSION,
 			);
 
+		// wp-scripts emits scss imports as style-index.css alongside index.js.
 		wp_enqueue_style(
 			'swps-admin',
-			SWPS_URL . 'assets/dist/admin/index.css',
+			SWPS_URL . 'assets/dist/admin/style-index.css',
 			array( 'wp-components' ),
 			$asset['version']
 		);
-		// The webpack/wp-scripts pipeline outputs an additional style-index.css from scss imports.
-		if ( file_exists( SWPS_DIR . 'assets/dist/admin/style-index.css' ) ) {
-			wp_enqueue_style(
-				'swps-admin-extra',
-				SWPS_URL . 'assets/dist/admin/style-index.css',
-				array( 'swps-admin' ),
-				$asset['version']
-			);
-		}
 		wp_enqueue_script(
 			'swps-admin',
 			SWPS_URL . 'assets/dist/admin/index.js',

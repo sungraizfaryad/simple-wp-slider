@@ -77,12 +77,22 @@ final class SWPS_Assets {
 				'version'      => SWPS_VERSION,
 			);
 
+		// wp-scripts emits two CSS files: index.css (Swiper base from JS imports)
+		// and style-index.css (scss aspect-ratio rules). Both are required.
 		wp_enqueue_style(
 			'swps-frontend',
 			SWPS_URL . 'assets/dist/frontend/index.css',
 			array(),
 			$asset['version']
 		);
+		if ( file_exists( SWPS_DIR . 'assets/dist/frontend/style-index.css' ) ) {
+			wp_enqueue_style(
+				'swps-frontend-extra',
+				SWPS_URL . 'assets/dist/frontend/style-index.css',
+				array( 'swps-frontend' ),
+				$asset['version']
+			);
+		}
 		wp_enqueue_script(
 			'swps-frontend',
 			SWPS_URL . 'assets/dist/frontend/index.js',
