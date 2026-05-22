@@ -15,6 +15,7 @@ composer.lock
 phpcs.xml.dist
 phpunit.xml.dist
 phpunit.xml
+.phpunit.result.cache
 webpack.config.js
 README.md
 *.log
