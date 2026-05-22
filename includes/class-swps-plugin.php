@@ -70,5 +70,8 @@ final class SWPS_Plugin {
 			require_once SWPS_DIR . 'admin/class-swps-admin.php';
 			SWPS_Admin::init();
 		}
+
+		require_once SWPS_DIR . 'includes/class-swps-rest.php';
+		SWPS_REST::init();
 	}
 }
