@@ -7,5 +7,6 @@
  *
  * @package SimpleWPSlider
  */
+
 ?>
 <!-- wp:swps/slider {"sliderId":0,"align":"full"} /-->
