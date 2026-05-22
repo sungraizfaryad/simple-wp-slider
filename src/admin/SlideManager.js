@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import { useSlider } from './SliderProvider';
 import { SlideList } from './SlideList';
 import { SlideEditorModal } from './SlideEditorModal';
+import { SettingsPanel } from './SettingsPanel';
 
 function makeNewSlide( type ) {
 	return {
@@ -120,6 +121,8 @@ export function SlideManager() {
 			/>
 
 			<SlideList onEdit={ setEditing } onDelete={ deleteSlide } />
+
+			<SettingsPanel />
 
 			{ editingSlide && (
 				<SlideEditorModal
