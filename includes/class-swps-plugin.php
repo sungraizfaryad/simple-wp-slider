@@ -60,6 +60,8 @@ final class SWPS_Plugin {
 		require_once SWPS_DIR . 'includes/class-swps-sanitizer.php';
 		require_once SWPS_DIR . 'includes/class-swps-cpt.php';
 		require_once SWPS_DIR . 'includes/class-swps-meta.php';
+		require_once SWPS_DIR . 'includes/class-swps-migrator.php';
+		SWPS_Migrator::init();
 		require_once SWPS_DIR . 'includes/class-swps-i18n.php';
 
 		add_action( 'plugins_loaded', array( 'SWPS_I18n', 'load' ) );
