@@ -6,11 +6,11 @@ import {
 	NavigableMenu,
 	Notice,
 	Spinner,
-	Modal,
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useSlider } from './SliderProvider';
 import { SlideList } from './SlideList';
+import { SlideEditorModal } from './SlideEditorModal';
 
 function makeNewSlide( type ) {
 	return {
@@ -57,6 +57,15 @@ export function SlideManager() {
 		dispatch( {
 			type: 'set_slides',
 			value: state.slides.filter( ( s ) => s.id !== id ),
+		} );
+	}
+
+	function updateSlide( updated ) {
+		dispatch( {
+			type: 'set_slides',
+			value: state.slides.map( ( s ) =>
+				s.id === updated.id ? updated : s
+			),
 		} );
 	}
 
@@ -113,22 +122,14 @@ export function SlideManager() {
 			<SlideList onEdit={ setEditing } onDelete={ deleteSlide } />
 
 			{ editingSlide && (
-				<Modal
-					title={ __( 'Edit slide', 'simple-wp-slider' ) }
-					onRequestClose={ () => setEditing( null ) }
-					size="medium"
-				>
-					<p>
-						{ __(
-							'Slide editor arrives in Task 23 (SlideEditorModal). Settings panel arrives in Task 24.',
-							'simple-wp-slider'
-						) }
-					</p>
-					<p>
-						{ __( 'Slide id:', 'simple-wp-slider' ) }{ ' ' }
-						<code>{ editingSlide.id }</code>
-					</p>
-				</Modal>
+				<SlideEditorModal
+					slide={ editingSlide }
+					onClose={ () => setEditing( null ) }
+					onSave={ ( updated ) => {
+						updateSlide( updated );
+						setEditing( null );
+					} }
+				/>
 			) }
 
 			<p style={ { marginTop: '1rem' } }>
