@@ -57,6 +57,7 @@ final class SWPS_Plugin {
 	 * @return void
 	 */
 	private function boot() {
-		// Subsystems wire themselves via add_action in later tasks.
+		require_once SWPS_DIR . 'includes/class-swps-cpt.php';
+		add_action( 'init', array( 'SWPS_CPT', 'register' ) );
 	}
 }
