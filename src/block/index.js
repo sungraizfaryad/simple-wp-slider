@@ -1,1 +1,7 @@
-// Block entry — Gutenberg registration arrives in a future task.
+import { registerBlockType } from '@wordpress/blocks';
+import metadata from './block.json';
+import Edit from './edit';
+import save from './save';
+import './editor.css';
+
+registerBlockType( metadata, { edit: Edit, save } );

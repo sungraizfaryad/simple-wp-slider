@@ -80,5 +80,8 @@ final class SWPS_Plugin {
 
 		require_once SWPS_DIR . 'includes/class-swps-assets.php';
 		SWPS_Assets::init();
+
+		require_once SWPS_DIR . 'includes/class-swps-block.php';
+		SWPS_Block::init();
 	}
 }

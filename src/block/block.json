@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "swps/slider",
+  "title": "Simple WP Slider",
+  "category": "media",
+  "icon": "images-alt2",
+  "description": "Embed a slider created with Simple WP Slider.",
+  "keywords": [ "slider", "carousel", "gallery" ],
+  "textdomain": "simple-wp-slider",
+  "supports": {
+    "html": false,
+    "align": [ "wide", "full" ],
+    "spacing": { "margin": true, "padding": false },
+    "anchor": true
+  },
+  "attributes": {
+    "sliderId": { "type": "number", "default": 0 },
+    "align": { "type": "string" }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./editor.css",
+  "render": "file:./render.php"
+}
