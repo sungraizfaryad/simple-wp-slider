@@ -3,7 +3,7 @@
  * Plugin Name:       Simple WP Slider
  * Plugin URI:        https://wordpress.org/plugins/simple-wp-slider
  * Description:       Multi-slider WordPress plugin with shortcode, Gutenberg block, and Swiper-powered frontend.
- * Version:           2.0.0-dev
+ * Version:           2.0.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Sungraiz Faryad
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SWPS_VERSION', '2.0.0-dev' );
+define( 'SWPS_VERSION', '2.0.0' );
 define( 'SWPS_FILE', __FILE__ );
 define( 'SWPS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SWPS_URL', plugin_dir_url( __FILE__ ) );
