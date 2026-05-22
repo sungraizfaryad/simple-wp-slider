@@ -26,4 +26,4 @@ define( 'SWPS_BASENAME', plugin_basename( __FILE__ ) );
 
 require_once SWPS_DIR . 'includes/class-swps-plugin.php';
 
-add_action( 'plugins_loaded', [ 'SWPS_Plugin', 'instance' ], 10 );
+add_action( 'plugins_loaded', array( 'SWPS_Plugin', 'instance' ), 10 );
