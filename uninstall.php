@@ -1,31 +1,73 @@
 <?php
-
 /**
- * Fired when the plugin is uninstalled.
+ * Fired when the plugin is deleted via WP admin.
  *
- * When populating this file, consider the following flow
- * of control:
+ * Removes:
+ *   - all swps_slider CPT posts (and their meta + revisions)
+ *   - plugin options + legacy wpss_basics safety net
+ *   - per-user notice dismiss meta
+ *   - stray post meta with our _swps_ prefix
+ *   - transients with the swps_ prefix
  *
- * - This method should be static
- * - Check if the $_REQUEST content actually is the plugin name
- * - Run an admin referrer check to make sure it goes through authentication
- * - Verify the output of $_GET makes sense
- * - Repeat with other user roles. Best directly by using the links/query string parameters.
- * - Repeat things for multisite. Once for a single site in the network, once sitewide.
- *
- * This file may be updated more in future version of the Boilerplate; however, this is the
- * general skeleton and outline for how the file should work.
- *
- * For more information, see the following discussion:
- * https://github.com/tommcfarlin/WordPress-Plugin-Boilerplate/pull/123#issuecomment-28541913
- *
- * @link       www.sungraizfaryad.com
- * @since      1.0.0
- *
- * @package    Simple_WP_Slider
+ * @package SimpleWPSlider
  */
 
-// If uninstall not called from WordPress, then exit.
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
+
+global $wpdb;
+
+// 1. Delete all slider CPT posts (and their meta + revisions).
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- uninstall cleanup
+$slider_ids = get_posts(
+	array(
+		'post_type'      => 'swps_slider',
+		'post_status'    => 'any',
+		'posts_per_page' => -1,
+		'fields'         => 'ids',
+	)
+);
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- uninstall cleanup
+foreach ( $slider_ids as $sid ) {
+	wp_delete_post( $sid, true );
+}
+
+// 2. Options.
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- uninstall cleanup
+$options = array(
+	'swps_settings',
+	'swps_db_version',
+	'swps_legacy_default_slider',
+	'wpss_basics',
+);
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- uninstall cleanup
+foreach ( $options as $opt ) {
+	delete_option( $opt );
+}
+
+// 3. User meta — notice dismiss flags.
+delete_metadata( 'user', 0, 'swps_notices', '', true );
+
+// 4. Stray post meta with our _swps_ prefix.
+// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- uninstall cleanup
+$like = $wpdb->esc_like( '_swps_' ) . '%';
+// phpcs:disable WordPress.DB.DirectDatabaseQuery -- uninstall cleanup
+// phpcs:disable WordPress.DB.SlowDBQuery -- uninstall cleanup
+$wpdb->query(
+	$wpdb->prepare(
+		"DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE %s",
+		$like
+	)
+);
+
+// 5. Transients with our prefix.
+$wpdb->query(
+	$wpdb->prepare(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+		'_transient_swps_%',
+		'_transient_timeout_swps_%'
+	)
+);
+// phpcs:enable WordPress.DB.SlowDBQuery
+// phpcs:enable WordPress.DB.DirectDatabaseQuery
