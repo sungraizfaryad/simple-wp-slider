@@ -45,6 +45,18 @@ final class SWPS_REST {
 						),
 					),
 				),
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'save_slider' ),
+					'permission_callback' => array( __CLASS__, 'can_edit_slider' ),
+					'args'                => array(
+						'id' => array(
+							'validate_callback' => function ( $value ) {
+								return is_numeric( $value );
+							},
+						),
+					),
+				),
 			)
 		);
 	}
@@ -99,5 +111,44 @@ final class SWPS_REST {
 				'settings' => $settings,
 			)
 		);
+	}
+
+	/**
+	 * POST /swps/v1/sliders/{id}
+	 * Atomic save: updates title, slides meta, and settings meta in one round-trip.
+	 * Returns the canonical saved state (via get_slider).
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function save_slider( WP_REST_Request $request ) {
+		$id     = (int) $request['id'];
+		$params = $request->get_json_params();
+		if ( ! is_array( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		if ( isset( $params['title'] ) ) {
+			wp_update_post(
+				array(
+					'ID'         => $id,
+					'post_title' => sanitize_text_field( wp_unslash( (string) $params['title'] ) ),
+				)
+			);
+		}
+
+		if ( isset( $params['slides'] ) ) {
+			$clean_slides = SWPS_Sanitizer::slides( $params['slides'] );
+			update_post_meta( $id, SWPS_Meta::KEY_SLIDES, $clean_slides );
+		}
+
+		if ( isset( $params['settings'] ) ) {
+			$clean_settings = SWPS_Sanitizer::settings( $params['settings'] );
+			update_post_meta( $id, SWPS_Meta::KEY_SETTINGS, $clean_settings );
+		}
+
+		update_post_meta( $id, SWPS_Meta::KEY_SCHEMA_VER, 2 );
+
+		return self::get_slider( $request );
 	}
 }

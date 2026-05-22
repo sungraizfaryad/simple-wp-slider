@@ -59,4 +59,49 @@ class Test_SWPS_REST extends WP_UnitTestCase {
 		$res = rest_get_server()->dispatch( $req );
 		$this->assertSame( 404, $res->get_status() );
 	}
+
+	public function test_post_slider_saves_title_slides_settings() {
+		$id = $this->make_slider();
+		wp_set_current_user( $this->admin_id );
+
+		$payload = array(
+			'title'    => 'New Title',
+			'slides'   => array(
+				array( 'type' => 'image', 'attachment_id' => 1, 'alt' => 'Hi' ),
+			),
+			'settings' => array( 'autoplay' => true, 'speed' => 1234 ),
+		);
+
+		$req = new WP_REST_Request( 'POST', '/swps/v1/sliders/' . $id );
+		$req->set_header( 'content-type', 'application/json' );
+		$req->set_body( wp_json_encode( $payload ) );
+
+		$res = rest_get_server()->dispatch( $req );
+		$this->assertSame( 200, $res->get_status() );
+
+		$this->assertSame( 'New Title', get_the_title( $id ) );
+		$slides = get_post_meta( $id, '_swps_slides', true );
+		$this->assertCount( 1, $slides );
+		$this->assertSame( 'Hi', $slides[0]['alt'] );
+		$settings = get_post_meta( $id, '_swps_settings', true );
+		$this->assertTrue( $settings['autoplay'] );
+		$this->assertSame( 1234, $settings['speed'] );
+	}
+
+	public function test_post_slider_rejects_invalid_payload_fields_silently() {
+		$id = $this->make_slider();
+		wp_set_current_user( $this->admin_id );
+
+		$req = new WP_REST_Request( 'POST', '/swps/v1/sliders/' . $id );
+		$req->set_header( 'content-type', 'application/json' );
+		$req->set_body( wp_json_encode( array(
+			'slides'   => array( array( 'type' => 'malware' ) ),
+			'settings' => array( 'effect' => 'evil' ),
+		) ) );
+		$res = rest_get_server()->dispatch( $req );
+		$this->assertSame( 200, $res->get_status() );
+		$data = $res->get_data();
+		$this->assertSame( 'image', $data['slides'][0]['type'] );
+		$this->assertSame( 'slide', $data['settings']['effect'] );
+	}
 }
