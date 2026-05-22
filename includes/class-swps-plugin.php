@@ -71,6 +71,7 @@ final class SWPS_Plugin {
 			SWPS_Admin::init();
 		}
 
+		require_once SWPS_DIR . 'includes/class-swps-video.php';
 		require_once SWPS_DIR . 'includes/class-swps-rest.php';
 		SWPS_REST::init();
 	}

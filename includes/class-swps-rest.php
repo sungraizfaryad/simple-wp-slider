@@ -81,6 +81,24 @@ final class SWPS_REST {
 
 		register_rest_route(
 			self::REST_NAMESPACE,
+			'/oembed-resolve',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'oembed_resolve' ),
+					'permission_callback' => array( __CLASS__, 'can_edit_posts' ),
+					'args'                => array(
+						'url' => array(
+							'required'          => true,
+							'sanitize_callback' => 'esc_url_raw',
+						),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
 			'/sliders/(?P<id>\d+)/duplicate',
 			array(
 				array(
@@ -96,6 +114,15 @@ final class SWPS_REST {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Permission callback for routes that just require edit_posts (no specific slider).
+	 *
+	 * @return bool
+	 */
+	public static function can_edit_posts() {
+		return current_user_can( 'edit_posts' );
 	}
 
 	/**
@@ -271,6 +298,40 @@ final class SWPS_REST {
 				'id'     => $new_id,
 				'title'  => get_the_title( $new_id ),
 				'status' => 'draft',
+			)
+		);
+	}
+
+	/**
+	 * GET /swps/v1/oembed-resolve?url=...
+	 * Validates a YouTube/Vimeo URL and returns provider+id+thumbnail_url.
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function oembed_resolve( WP_REST_Request $request ) {
+		$url    = (string) $request['url'];
+		$parsed = SWPS_Video::parse( $url );
+		if ( ! $parsed ) {
+			return new WP_Error( 'swps_unsupported_url', __( 'Unsupported video URL.', 'simple-wp-slider' ), array( 'status' => 400 ) );
+		}
+
+		$thumb = SWPS_Video::thumbnail_url( $parsed['provider'], $parsed['id'] );
+		if ( '' === $thumb && 'vimeo' === $parsed['provider'] ) {
+			$resp = wp_remote_get( 'https://vimeo.com/api/oembed.json?url=' . rawurlencode( $url ), array( 'timeout' => 5 ) );
+			if ( ! is_wp_error( $resp ) && 200 === wp_remote_retrieve_response_code( $resp ) ) {
+				$body = json_decode( wp_remote_retrieve_body( $resp ), true );
+				if ( ! empty( $body['thumbnail_url'] ) ) {
+					$thumb = esc_url_raw( $body['thumbnail_url'] );
+				}
+			}
+		}
+
+		return rest_ensure_response(
+			array(
+				'provider'      => $parsed['provider'],
+				'id'            => $parsed['id'],
+				'thumbnail_url' => $thumb,
 			)
 		);
 	}
