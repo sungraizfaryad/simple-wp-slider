@@ -1,0 +1,38 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          tools: composer
+      - name: Install Composer deps
+        run: composer install --no-progress --prefer-dist
+      - name: Run phpcs
+        run: vendor/bin/phpcs --standard=phpcs.xml.dist
+
+  js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install npm deps
+        run: npm ci
+      - name: Lint JS
+        run: npm run lint:js
+      - name: Lint CSS
+        run: npm run lint:css
+      - name: Build
+        run: npm run build
