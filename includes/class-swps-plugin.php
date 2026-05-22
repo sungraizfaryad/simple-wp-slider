@@ -60,8 +60,15 @@ final class SWPS_Plugin {
 		require_once SWPS_DIR . 'includes/class-swps-sanitizer.php';
 		require_once SWPS_DIR . 'includes/class-swps-cpt.php';
 		require_once SWPS_DIR . 'includes/class-swps-meta.php';
+		require_once SWPS_DIR . 'includes/class-swps-i18n.php';
 
+		add_action( 'plugins_loaded', array( 'SWPS_I18n', 'load' ) );
 		add_action( 'init', array( 'SWPS_CPT', 'register' ) );
 		add_action( 'init', array( 'SWPS_Meta', 'register' ) );
+
+		if ( is_admin() ) {
+			require_once SWPS_DIR . 'admin/class-swps-admin.php';
+			SWPS_Admin::init();
+		}
 	}
 }
