@@ -75,5 +75,7 @@ final class SWPS_Plugin {
 		require_once SWPS_DIR . 'includes/class-swps-rest.php';
 		SWPS_REST::init();
 		require_once SWPS_DIR . 'includes/class-swps-renderer.php';
+		require_once SWPS_DIR . 'includes/class-swps-shortcode.php';
+		SWPS_Shortcode::init();
 	}
 }
