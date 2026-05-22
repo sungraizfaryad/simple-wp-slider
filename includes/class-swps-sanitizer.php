@@ -134,7 +134,7 @@ final class SWPS_Sanitizer {
 					$rel_parts[] = $force;
 				}
 			}
-			$link_rel = implode( ' ', $rel_parts );
+			$link_rel = implode( ' ', array_unique( $rel_parts ) );
 		}
 
 		$out = array(

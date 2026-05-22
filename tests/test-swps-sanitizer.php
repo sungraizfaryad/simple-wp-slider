@@ -58,4 +58,41 @@ class Test_SWPS_Sanitizer extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'noopener', $out['link_rel'] );
 		$this->assertStringContainsString( 'noreferrer', $out['link_rel'] );
 	}
+
+	public function test_sanitize_slide_preserves_legacy_url_and_vimeo_thumb() {
+		$out = SWPS_Sanitizer::slide( array(
+			'_legacy_url'  => 'https://example.com/old.jpg',
+			'_vimeo_thumb' => 'https://i.vimeocdn.com/x.jpg',
+		) );
+		$this->assertSame( 'https://example.com/old.jpg', $out['_legacy_url'] );
+		$this->assertSame( 'https://i.vimeocdn.com/x.jpg', $out['_vimeo_thumb'] );
+	}
+
+	public function test_sanitize_settings_clamps_breakpoint_pixel_range() {
+		$out = SWPS_Sanitizer::settings( array(
+			'breakpoints' => array(
+				'768'   => array( 'slides_per_view' => 2 ),
+				'99999' => array( 'slides_per_view' => 3 ),
+				'-5'    => array( 'slides_per_view' => 1 ),
+				'0'     => array( 'slides_per_view' => 1 ),
+			),
+		) );
+		$this->assertArrayHasKey( '768', $out['breakpoints'] );
+		$this->assertArrayNotHasKey( '99999', $out['breakpoints'] );
+		$this->assertArrayNotHasKey( '-5', $out['breakpoints'] );
+		$this->assertArrayNotHasKey( '0', $out['breakpoints'] );
+		$this->assertSame( 2, $out['breakpoints']['768']['slides_per_view'] );
+	}
+
+	public function test_sanitize_slide_dedupes_link_rel() {
+		$out = SWPS_Sanitizer::slide( array(
+			'type'        => 'image',
+			'link_target' => '_blank',
+			'link_rel'    => 'noopener noopener',
+		) );
+		$parts = explode( ' ', $out['link_rel'] );
+		$this->assertSame( count( $parts ), count( array_unique( $parts ) ) );
+		$this->assertContains( 'noopener', $parts );
+		$this->assertContains( 'noreferrer', $parts );
+	}
 }
